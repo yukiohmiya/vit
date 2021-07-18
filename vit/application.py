@@ -147,6 +147,7 @@ class Application():
         self.action_manager_registrar.register('QUIT', self.quit)
         self.action_manager_registrar.register('QUIT_WITH_CONFIRM', self.activate_command_bar_quit_with_confirm)
         self.action_manager_registrar.register('TASK_ADD', self.activate_command_bar_add)
+        self.action_manager_registrar.register('TASK_ADD_DEPEND', self.activate_command_bar_add_depends)
         self.action_manager_registrar.register('REPORT_FILTER', self.activate_command_bar_filter)
         self.action_manager_registrar.register('TASK_UNDO', self.task_undo)
         self.action_manager_registrar.register('TASK_SYNC', self.task_sync)
@@ -377,6 +378,11 @@ class Application():
                     self.search_set_term(data['text'])
                     self.search_set_direction(op)
                     self.search(reverse=(op == 'search-reverse'))
+                elif op == 'depend':
+                    uuid = metadata['uuid']
+                    if self.execute_command(
+                            ['task', 'add', f' depend:{uuid}'] + args, wait=self.wait):
+                        self.activate_message_bar('Task %s depend add' % self.model.task_id(metadata['uuid']))
         self.widget.focus_position = 'body'
         if 'uuid' in metadata:
             self.task_list.focus_by_task_uuid(metadata['uuid'], self.previous_focus_position)
@@ -646,6 +652,14 @@ class Application():
     def activate_command_bar_add(self):
         self.activate_command_bar('add', 'Add: ')
 
+    def activate_command_bar_add_depends(self):
+        import debug
+        uuid, _ = self.get_focused_task()
+        debug.console(uuid)
+        if uuid:
+            self.activate_command_bar('depend', 'Depend: ', {'uuid': uuid})
+            self.task_list.focus_by_task_uuid(uuid, self.previous_focus_position)
+
     def activate_command_bar_filter(self):
         self.activate_command_bar('filter', 'Filter: ')
 
@@ -821,7 +835,7 @@ class Application():
 
     def setup_autocomplete(self, op):
         callback = self.command_bar.set_edit_text_callback()
-        if op in ('filter', 'add', 'modify'):
+        if op in ('filter', 'add', 'modify', 'depend'):
             self.autocomplete.setup(callback)
         elif op in ('ex',):
             filters = ('report', 'column', 'project', 'tag', 'help')

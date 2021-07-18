@@ -11,6 +11,7 @@ class Actions(object):
         self.action_registrar.register('GLOBAL_ESCAPE', 'Top-level escape function')
         self.action_registrar.register('REFRESH', 'Refresh the current report')
         self.action_registrar.register('TASK_ADD', 'Add a task (supports tab completion)')
+        self.action_registrar.register('TASK_ADD_DEPEND', 'Add dependent task')
         self.action_registrar.register('REPORT_FILTER', 'Filter current report using provided FILTER arguments (supports tab completion)')
         self.action_registrar.register('TASK_UNDO', 'Undo last task change')
         self.action_registrar.register('TASK_SYNC', 'Synchronize with configured taskd server')
