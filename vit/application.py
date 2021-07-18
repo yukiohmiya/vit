@@ -172,6 +172,7 @@ class Application():
         self.action_manager_registrar.register('TASK_WAIT', self.task_action_wait)
         self.action_manager_registrar.register('TASK_EDIT', self.task_action_edit)
         self.action_manager_registrar.register('TASK_SHOW', self.task_action_show)
+        self.action_manager_registrar.register('TASK_DUPLICATE', self.task_action_duplicate)
 
     def default_keybinding_replacements(self):
         import json
@@ -798,6 +799,11 @@ class Application():
         if uuid:
             self.execute_command(['task', uuid, 'info'], update_report=False)
             self.task_list.focus_by_task_uuid(uuid)
+
+    def task_action_duplicate(self):
+        uuid, _ = self.get_focused_task()
+        if uuid:
+            self.execute_command(['task', uuid, 'duplicate'], update_report=True)
 
     def get_available_task_columns(self):
         returncode, stdout, stderr = self.command.run(['task', '_columns'], capture_output=True)
