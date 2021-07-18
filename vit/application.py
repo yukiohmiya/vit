@@ -653,9 +653,7 @@ class Application():
         self.activate_command_bar('add', 'Add: ')
 
     def activate_command_bar_add_depends(self):
-        import debug
         uuid, _ = self.get_focused_task()
-        debug.console(uuid)
         if uuid:
             self.activate_command_bar('depend', 'Depend: ', {'uuid': uuid})
             self.task_list.focus_by_task_uuid(uuid, self.previous_focus_position)
