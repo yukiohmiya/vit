@@ -309,6 +309,8 @@ class Application():
                 self.task_delete(metadata['uuid'])
             elif op == 'start-stop' and choice is not None:
                 self.task_start_stop(metadata['uuid'])
+            elif op == 'duplicate' and choice is not None:
+                self.task_duplicate(metadata['uuid'])
             elif op == 'priority' and choice is not None:
                 task = self.model.task_priority(metadata['uuid'], choice)
                 if task:
@@ -751,6 +753,9 @@ class Application():
             else:
                 self.activate_message_bar('Error: %s' % task, 'error')
 
+    def task_duplicate(self, uuid):
+        self.execute_command(['task', uuid, 'duplicate'], update_report=True)
+
     def task_action_annotate(self):
         uuid, _ = self.get_focused_task()
         if uuid:
@@ -837,9 +842,15 @@ class Application():
             self.task_list.focus_by_task_uuid(uuid)
 
     def task_action_duplicate(self):
-        uuid, _ = self.get_focused_task()
+        uuid, task = self.get_focused_task()
         if uuid:
-            self.execute_command(['task', uuid, 'duplicate'], update_report=True)
+            if self.confirm:
+                self.activate_command_bar(
+                    'duplicate',
+                    'Duplicate task %s? (y/n): ' % (self.model.task_id(uuid)),
+                    {'uuid': uuid, 'choices': {'y': True}})
+            else:
+                self.execute_command(['task', uuid, 'duplicate'], update_report=True)
 
     def get_available_task_columns(self):
         returncode, stdout, stderr = self.command.run(['task', '_columns'], capture_output=True)
