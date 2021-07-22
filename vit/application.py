@@ -66,6 +66,7 @@ class MainFrame(urwid.Frame):
 
 class Application():
     def __init__(self, option, filters):
+        self.bulk_id = []
         self.extra_filters = filters
         self.loader = Loader()
         self.load_early_config()
@@ -172,6 +173,7 @@ class Application():
         self.action_manager_registrar.register('TASK_WAIT', self.task_action_wait)
         self.action_manager_registrar.register('TASK_EDIT', self.task_action_edit)
         self.action_manager_registrar.register('TASK_SHOW', self.task_action_show)
+        self.action_manager_registrar.register('TASK_SELECT', self.task_action_select)
 
     def default_keybinding_replacements(self):
         import json
@@ -654,6 +656,18 @@ class Application():
     def task_sync(self):
         self.execute_command(['task', 'sync'])
 
+    def task_action_select(self):
+        uuid, task = self.get_focused_task()
+        if uuid:
+            task_id = str(self.model.task_id(task['uuid']))
+            if task_id in self.bulk_id:
+                self.bulk_id.remove(task_id)
+            else:
+                self.bulk_id += [task_id]
+            bulk_id = ' '.join(self.bulk_id)
+            if bulk_id:
+                self.activate_message_bar(f'Selected: {bulk_id}')
+
     def activate_command_bar_quit_with_confirm(self):
         if self.confirm:
             self.activate_command_bar('quit', 'Quit?', {'choices': {'y': True}})
@@ -668,7 +682,11 @@ class Application():
         self.activate_command_bar('ex', ':', metadata)
 
     def activate_command_bar_ex_read_wait_task(self):
-        self.activate_command_bar('ex', ':', {}, edit_text='!rw task ')
+        bulk_id = ' '.join(self.bulk_id)
+        edit_text = f'!rw task {bulk_id} ' if len(bulk_id) else '!rw task '
+
+        self.activate_command_bar('ex', ':', {}, edit_text=edit_text)
+        self.bulk_id = []
 
     def activate_command_bar_search_forward(self):
         self.activate_command_bar('search-forward', '/', {'history': 'search'})
@@ -686,6 +704,7 @@ class Application():
         self.activate_command_bar('context', 'Context: ')
 
     def global_escape(self):
+        self.bulk_id = []
         self.denotation_pop_up.close_pop_up()
 
 
